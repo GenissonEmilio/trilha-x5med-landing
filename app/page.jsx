@@ -114,7 +114,6 @@ export default function Home() {
             <div className="hero-frame interactive-video-frame">
               <video
                 className="hero-video"
-                poster="/assets/hero-x5med.png"
                 muted
                 loop
                 playsInline
