@@ -1,15 +1,6 @@
 const root = document.documentElement
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
-document.body.classList.add("is-loading")
-
-window.addEventListener("load", () => {
-  window.setTimeout(() => {
-    document.body.classList.remove("is-loading")
-    document.body.classList.add("is-ready")
-  }, reduceMotion ? 0 : 120)
-})
-
 function updateScrollEffects() {
   const maxScroll = document.documentElement.scrollHeight - window.innerHeight
   const progress = maxScroll > 0 ? window.scrollY / maxScroll : 0
@@ -144,6 +135,18 @@ document.querySelectorAll(".capture-form").forEach((form) => {
     field.classList.remove("is-invalid")
   }
 
+  function unlockCheckout() {
+    const checkoutTarget = form.dataset.checkout
+    if (!checkoutTarget) return false
+
+    const checkoutSection = document.querySelector(checkoutTarget)
+    checkoutSection?.classList.add("is-unlocked")
+    window.setTimeout(() => {
+      checkoutSection?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" })
+    }, 220)
+    return true
+  }
+
   requiredFields.forEach((field) => {
     field.addEventListener("input", () => clearFieldState(field))
   })
@@ -155,12 +158,17 @@ document.querySelectorAll(".capture-form").forEach((form) => {
     if (invalidField) {
       invalidField.classList.add("is-invalid")
       invalidField.focus()
-      setStatus("Preencha nome e WhatsApp para receber as informações da próxima turma.", "error")
+      setStatus("Preencha nome, WhatsApp e e-mail para liberar a inscrição.", "error")
       return
     }
 
     const endpoint = form.dataset.endpoint
     if (!endpoint) {
+      if (unlockCheckout()) {
+        setStatus("Formulário validado. Continue para finalizar sua inscrição.", "success")
+        return
+      }
+
       setStatus("O envio ainda precisa de um endpoint ou CRM configurado. Os campos foram validados, mas os dados nao foram enviados.", "error")
       return
     }
@@ -180,7 +188,8 @@ document.querySelectorAll(".capture-form").forEach((form) => {
       if (!response.ok) throw new Error("Lead request failed")
 
       form.reset()
-      setStatus("Recebemos seus dados. A equipe X5 Med entrara em contato.", "success")
+      unlockCheckout()
+      setStatus("Recebemos seus dados. Continue para finalizar sua inscrição.", "success")
     } catch (error) {
       setStatus("Nao foi possivel enviar agora. Tente novamente em instantes.", "error")
     } finally {
