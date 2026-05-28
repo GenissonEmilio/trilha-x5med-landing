@@ -665,6 +665,27 @@ h1 span, h2 span {
   pointer-events: none;
 }
 
+/* Loading state — subtle spinner while buffering */
+.interactive-video-frame.is-video-loading .video-interaction-hint span {
+  opacity: 0;
+}
+
+.interactive-video-frame.is-video-loading .video-interaction-hint::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 210, 255, 0.25);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: videoSpinner 0.7s linear infinite;
+}
+
+@keyframes videoSpinner {
+  to { transform: rotate(360deg); }
+}
+
+
 .hero-frame::before {
   content: "";
   position: absolute;

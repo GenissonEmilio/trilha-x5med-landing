@@ -117,10 +117,11 @@ export default function Home() {
                 muted
                 loop
                 playsInline
-                preload="auto"
+                preload="none"
+                poster="/assets/hero-x5med-poster.jpg"
                 aria-label="Dr. Fabio em ambiente premium apresentando a X5 Med"
               >
-                <source src="/assets/video-hero-dr-fabio.mp4" type="video/mp4" />
+                <source data-src="/assets/video-hero-dr-fabio.mp4" type="video/mp4" />
               </video>
               <div className="frame-scan" aria-hidden="true" />
               <div className="video-interaction-hint" aria-hidden="true">

@@ -123,20 +123,60 @@ document.querySelectorAll(".interactive-video-frame").forEach((frame) => {
   if (!video) return
 
   const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches
-  video.pause()
+  let sourceLoaded = false
+
+  // Load the video source lazily — only when the frame is near the viewport
+  function loadVideoSource() {
+    if (sourceLoaded) return
+    sourceLoaded = true
+    const source = video.querySelector("source")
+    if (source && source.dataset.src) {
+      source.src = source.dataset.src
+      video.load()
+    }
+  }
+
+  // Observe when the frame enters the viewport to start loading
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            loadVideoSource()
+            observer.unobserve(frame)
+          }
+        })
+      },
+      { rootMargin: "200px 0px" } // start loading 200px before it enters view
+    )
+    observer.observe(frame)
+  } else {
+    loadVideoSource()
+  }
 
   function playVideo() {
     if (reduceMotion) return
+    loadVideoSource()
+    frame.classList.add("is-video-loading")
     const playRequest = video.play()
-    if (playRequest && typeof playRequest.catch === "function") {
-      playRequest.catch(() => {})
+    if (playRequest && typeof playRequest.then === "function") {
+      playRequest
+        .then(() => {
+          frame.classList.remove("is-video-loading")
+          frame.classList.add("is-video-playing")
+        })
+        .catch(() => {
+          frame.classList.remove("is-video-loading")
+        })
+    } else {
+      frame.classList.remove("is-video-loading")
+      frame.classList.add("is-video-playing")
     }
-    frame.classList.add("is-video-playing")
   }
 
   function pauseVideo() {
     video.pause()
-    frame.classList.remove("is-video-playing")
+    frame.classList.remove("is-video-playing", "is-video-loading")
   }
 
   if (canHover) {
